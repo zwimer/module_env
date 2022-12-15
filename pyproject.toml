@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "module_env"
+license = {text = "GPLv3"}
+description = "Context manage-able module-environments for python!"
+readme = "README.md"
+requires-python = ">= 3.6"
+dynamic = ["version"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+]
+
+[project.urls]
+Homepage = "https://github.com/zwimer/module_env"
+
+# Setuptools
+
+[tool.setuptools]
+license-files = ["LICENSE"]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+namespaces = false
+
+[tool.setuptools.package-data]
+module_env = ["py.typed"]
+
+[tool.setuptools.dynamic.version]
+attr = "module_env.__version__"
