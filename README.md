@@ -44,9 +44,6 @@ Entering the context applies the environment; exiting restores the previous envi
 Module environments are not nestable!
 An example usage:
 ```python
-from module_env import ModuleEnv
-import sys
-
 def multi():
     import multiprocessing
 
@@ -62,9 +59,6 @@ without exiting a context manager via a child `InverseModuleEnv`.
 In this case, entering the context of a new `ModuleEnv` is permissible.
 For example:
 ```python
-from module_env import ModuleEnv
-import sys
-
 def multi():
     import multiprocessing
 
@@ -90,8 +84,6 @@ This is just syntactic sugar that might allow explicitness about which environme
 at the time of the call, verifying this statement each use.
 For example, here are three ways to import a module:
 ```python
-from module_env import ModuleEnv
-
 with ModuleEnv() as env:
     # Three functionally identical ways of importing multiprocessing
     m1 = env["multiprocessing"]
@@ -132,7 +124,7 @@ with ModuleEnv() as env:
     # 'env' environment
     with env.inverse() as inv:
         # Global environment
-        with env.inverse():  # Not the same object as 'env', but shares the same environment
+        with inv.inverse():  # Not the same object as 'env', but shares the same environment
             # 'env' environment
             pass
         with env:
