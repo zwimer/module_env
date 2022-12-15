@@ -88,7 +88,7 @@ this should just be a variable assignment.
 this function is only usable when the environment is active.
 This is just syntactic sugar that might allow explicitness about which environment ought to be active 
 at the time of the call, verifying this statement each use.
-For example, here are three ways to import :
+For example, here are three ways to import a module:
 ```python
 from module_env import ModuleEnv
 
@@ -115,17 +115,26 @@ meaning the second `ModuleEnv` context is not actually nested
 
 Constructing an `InverseModuleEnv` can _only_ be done via a `ModuleEnv`'s `.inverse()` function.
 The `ModuleEnv` responsible for creating the `InverseModuleEnv` is considered the parent.
+`InverseModuleEnv`s contexts may only be entered if within the parents' environment is active.
+Just like `ModuleEnv`s, `InverseModuleEnv`s expose `.__getitem__`.
 
-`InverseModuleEnv`s contexts may only be entered if within the 
-Just like `ModuleEnv`s, 
+`InverseModuleEnv`s themselves can be inverted via a call to `.invert()`.
+This will return a child `ModuleEnv`; just like any child, this
+child's context may only be entered when its parent context is active.
+A key point here is that given `inv=env.invert(); env2=inv.invert()`, `env2` is a distinct object from `env`.
+Both apply the same environment once entered, but `env2` is a
+child of `inv` and thus may only be entered when `inv` is active.
 
-For example:
+A usage example:
 ```python
 # Global environment
 with ModuleEnv() as env:
     # 'env' environment
     with env.inverse() as inv:
         # Global environment
+        with env.inverse():  # Not the same object as 'env', but shares the same environment
+            # 'env' environment
+            pass
         with env:
             # 'env' environment
             pass
