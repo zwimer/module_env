@@ -4,30 +4,46 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "module_env"
-license = {text = "GPLv3"}
-description = "Context manage-able module-environments for python!"
-readme = "README.md"
-requires-python = ">= 3.6"
-dynamic = ["version"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.8",
 ]
+license = {text = "GPLv3"}
+description = "Context manage-able module-environments for python!"
+urls = {Homepage = "https://github.com/zwimer/module_env"}
+requires-python = ">= 3.8"
+dynamic = ["version"]
 
-[project.urls]
-Homepage = "https://github.com/zwimer/module_env"
-
-# Setuptools
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
 
 [tool.setuptools]
 license-files = ["LICENSE"]
 include-package-data = false
 
-[tool.setuptools.packages.find]
-namespaces = false
+[tool.setuptools.packages]
+find = {namespaces = false}
 
 [tool.setuptools.package-data]
 module_env = ["py.typed"]
 
-[tool.setuptools.dynamic.version]
-attr = "module_env.__version__"
+[tool.setuptools.dynamic]
+version = {attr = "module_env.__version__"}
+
+# Tools
+
+[tool.black]
+line-length = 120
+target-version = ["py38"]
+
+[tool.ruff]
+ignore=["E731"]
+line-length = 120
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+
+[tool.pylint.'MESSAGES CONTROL']
+max-line-length = 120
+disable = "unspecified-encoding,missing-module-docstring,too-few-public-methods,missing-class-docstring,missing-function-docstring"
+

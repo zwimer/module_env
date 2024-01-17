@@ -2,9 +2,9 @@
 
 Context manage-able module-environments for python!
 Have you ever needed multiple verions a python module installed?
-Wanted to temprarily pollute `sys.path` or `import` some module but were afraid of polluting the global environment? 
+Wanted to temprarily pollute `sys.path` or `import` some module but were afraid of polluting the global environment?
 
-Worry no more! `ModuleEnv` is like a runtime virtualenv for python modules! 
+Worry no more! `ModuleEnv` is like a runtime virtualenv for python modules!
 The best part, it's just a context manager, `with ModuleEnv()` is all you need!
 
 ### Install
@@ -28,7 +28,7 @@ _Construction_: Upon construction, a `ModuleEnv` will save a copy of the current
 That is, the env the `ModuleEnv` instance uses is initialized as a copy of the environment at time of construction
 This does mean that if constructed within another `ModuleEnv`'s context, it will copy that installed context.
 
-Generally users will want to default construct 
+Generally users will want to default construct
 this class, but this class does permit users to specify
 which attributes within `sys` are saved and restored during module setup and teardown.
 This can be done as follows:
@@ -50,11 +50,11 @@ def multi():
 with ModuleEnv():
     multi()  # Import in a function so globals() / locals() is not affected
     assert "multiprocessing" in sys.modules  # Imported in env
-    
+
 assert "multiprocessing" not in sys.modules  # Not outside of env
 ```
 
-`.inverse()`: Module environment contexts can temporarily be escaped 
+`.inverse()`: Module environment contexts can temporarily be escaped
 without exiting a context manager via a child `InverseModuleEnv`.
 In this case, entering the context of a new `ModuleEnv` is permissible.
 For example:
@@ -80,7 +80,7 @@ One way to handle this is to just call `import` on the module again, since the m
 this should just be a variable assignment.
 `ModuleEnv`s expose a `__getitem__` function which is functionally just `__import__` for the given environment;
 this function is only usable when the environment is active.
-This is just syntactic sugar that might allow explicitness about which environment ought to be active 
+This is just syntactic sugar that might allow explicitness about which environment ought to be active
 at the time of the call, verifying this statement each use.
 For example, here are three ways to import a module:
 ```python
@@ -101,7 +101,7 @@ This context-manager class allows for escaping a `ModuleEnv` context without exi
 Entering the context an `InverModuleEnv` restores the module
 environment to the environment the parent `ModuleEnv` has active.
 An `InverseModuleEnv` can exclusively invert the environment of the `ModuleEnv` which created it.
-Entering the context of a `ModuleEnv` when in the context of an `InverseModuleEnv` is allowed, as the 
+Entering the context of a `ModuleEnv` when in the context of an `InverseModuleEnv` is allowed, as the
 `InverseModuleEnv` context between the two `ModuleEnv` functionally inverts the first,
 meaning the second `ModuleEnv` context is not actually nested
 
@@ -144,7 +144,7 @@ inv = env.inverse()
 with env, inv:
     # 'env' environment
     with ModuleEnv() as env2:
-        # with inv:  # INVALID: 
+        # with inv:  # INVALID:
             # Only env2.invert() can invert env2!
         pass
     # with env.inverse().inverse():  # INVALID

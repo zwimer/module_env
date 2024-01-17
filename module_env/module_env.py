@@ -1,6 +1,7 @@
-from typing import Optional, Union, Deque, Tuple, Dict, Any
+from __future__ import annotations
 from collections import deque
 from types import ModuleType
+from typing import Any
 import sys
 
 
@@ -20,15 +21,15 @@ class _Sys:
 
     __slots__ = ("_attrs", "_data", "modules")
 
-    def __init__(self, attrs: Tuple[str, ...]):
+    def __init__(self, attrs: tuple[str, ...]):
         """
         :param attrs: sys attributes, aside from sys.modules, this env should manage
         """
-        self._attrs: Tuple[str, ...] = attrs
-        self._data: Dict[str, Any] = {i: getattr(sys, i).copy() for i in self._attrs}
-        self.modules: Dict[str, Any] = sys.modules.copy()
+        self._attrs: tuple[str, ...] = attrs
+        self._data: dict[str, Any] = {i: getattr(sys, i).copy() for i in self._attrs}
+        self.modules: dict[str, Any] = sys.modules.copy()
 
-    def install(self) -> "_Sys":
+    def install(self) -> _Sys:
         """
         Install the current data into sys
         :return: A _Sys constructed of the previous data stored in sys
@@ -69,13 +70,13 @@ class _ModuleEnv:
     """
 
     __slots__ = ("_parent", "_sys")
-    _active: Deque[Optional["_ModuleEnv"]] = deque([None])
+    _active: deque[_ModuleEnv | None] = deque([None])
 
     def __init__(
         self,
         *,
-        sys_attrs: Tuple[str, ...] = ("meta_path", "path_hooks", "path", "path_importer_cache"),
-        _parent: Optional["_ModuleEnv"] = None,
+        sys_attrs: tuple[str, ...] = ("meta_path", "path_hooks", "path", "path_importer_cache"),
+        _parent: _ModuleEnv | None = None,
     ):
         """
         :param sys_attrs: sys attributes, aside from sys.modules, this env should manage
@@ -83,17 +84,17 @@ class _ModuleEnv:
         """
         if isinstance(self, InverseModuleEnv) and _parent is None:
             raise UsageError("Users should not construct an InverseModuleEnv directly")
-        self._parent: Optional["_ModuleEnv"] = _parent
+        self._parent: _ModuleEnv | None = _parent
         self._sys: _Ref = _Ref(_Sys(sys_attrs)) if self._parent is None else self._parent._sys
 
-    def inverse(self) -> Union["ModuleEnv", "InverseModuleEnv"]:
+    def inverse(self) -> ModuleEnv | InverseModuleEnv:
         """
         For ModuleEnv's this returns an InverseModuleEnv
         whose context manager can escape the current ModuleEnv
         For an InverseModuleEnv this returns an ModuleEnv which can re-enter the escaped context
         :return: An _ModuleEnv that undoes what the context manager of this _ModuleEnv does
         """
-        return (InverseModuleEnv if isinstance(self, ModuleEnv) else ModuleEnv)(_parent=self)
+        return (InverseModuleEnv if isinstance(self, ModuleEnv) else ModuleEnv)(_parent=self)  # type: ignore
 
     def __getitem__(self, module: str) -> ModuleType:
         """
@@ -110,7 +111,7 @@ class _ModuleEnv:
             ret = __import__(module)
         return ret
 
-    def __enter__(self) -> "_ModuleEnv":
+    def __enter__(self) -> _ModuleEnv:
         """
         Set up the new environment on enter
         :return: self
