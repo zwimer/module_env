@@ -46,4 +46,3 @@ line-length = 120
 [tool.pylint.'MESSAGES CONTROL']
 max-line-length = 120
 disable = "unspecified-encoding,missing-module-docstring,too-few-public-methods,missing-class-docstring,missing-function-docstring"
-
