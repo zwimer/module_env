@@ -1,11 +1,10 @@
 from __future__ import annotations
+from typing import ClassVar, Self, Any
 from collections import deque
 from types import ModuleType
-from typing import Any
 import sys
 
-
-__all__ = ("ModuleEnv", "InverseModuleEnv", "UsageError")
+__all__ = ("InverseModuleEnv", "ModuleEnv", "UsageError")
 
 
 class UsageError(RuntimeError):
@@ -70,13 +69,13 @@ class _ModuleEnv:
     """
 
     __slots__ = ("_parent", "_sys")
-    _active: deque[_ModuleEnv | None] = deque([None])
+    _active: ClassVar[deque[Self | None]] = deque([None])
 
     def __init__(
         self,
         *,
         sys_attrs: tuple[str, ...] = ("meta_path", "path_hooks", "path", "path_importer_cache"),
-        _parent: _ModuleEnv | None = None,
+        _parent: Self | None = None,
     ):
         """
         :param sys_attrs: sys attributes, aside from sys.modules, this env should manage
@@ -84,7 +83,7 @@ class _ModuleEnv:
         """
         if isinstance(self, InverseModuleEnv) and _parent is None:
             raise UsageError("Users should not construct an InverseModuleEnv directly")
-        self._parent: _ModuleEnv | None = _parent
+        self._parent: Self | None = _parent
         self._sys: _Ref = _Ref(_Sys(sys_attrs)) if self._parent is None else self._parent._sys
 
     def inverse(self) -> ModuleEnv | InverseModuleEnv:
@@ -111,7 +110,7 @@ class _ModuleEnv:
             ret = __import__(module)
         return ret
 
-    def __enter__(self) -> _ModuleEnv:
+    def __enter__(self) -> Self:
         """
         Set up the new environment on enter
         :return: self

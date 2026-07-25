@@ -14,7 +14,7 @@ class TestInit(unittest.TestCase):
         self.assertNotEqual(len(ModuleEnv()._sys.obj._attrs), 0)
 
     def test_configurable(self):
-        self.assertEqual(len(ModuleEnv(sys_attrs=tuple())._sys.obj._attrs), 0)
+        self.assertEqual(len(ModuleEnv(sys_attrs=())._sys.obj._attrs), 0)
 
     def test_inverse(self):
         self.assertIsInstance(ModuleEnv().inverse(), InverseModuleEnv)
