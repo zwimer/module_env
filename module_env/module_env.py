@@ -8,30 +8,28 @@ __all__ = ("InverseModuleEnv", "ModuleEnv", "UsageError")
 
 
 class UsageError(RuntimeError):
-    """
-    A runtime error raised when ModuleEnv detects improper usage
-    """
+    """A runtime error raised when ModuleEnv detects improper usage"""
 
 
 class _Sys:
-    """
-    A small class which manages variables stored in sys
-    """
+    """A small class which manages variables stored in sys"""
 
     __slots__ = ("_attrs", "_data", "modules")
 
     def __init__(self, attrs: tuple[str, ...]):
         """
-        :param attrs: sys attributes, aside from sys.modules, this env should manage
+        Args:
+            attrs: sys attributes, aside from sys.modules, this env should manage
         """
         self._attrs: tuple[str, ...] = attrs
         self._data: dict[str, Any] = {i: getattr(sys, i).copy() for i in self._attrs}
         self.modules: dict[str, Any] = sys.modules.copy()
 
     def install(self) -> _Sys:
-        """
-        Install the current data into sys
-        :return: A _Sys constructed of the previous data stored in sys
+        """Install the current data into sys
+
+        Returns:
+            A _Sys constructed of the previous data stored in sys
         """
         old = _Sys(self._attrs)
         # Edit assignments
@@ -45,8 +43,7 @@ class _Sys:
 
 
 class _Ref:
-    """
-    A container which holds one object
+    """A container which holds one object
     Useful when sharing an assignable object
     """
 
@@ -54,14 +51,14 @@ class _Ref:
 
     def __init__(self, obj: Any):
         """
-        :param obj: The object to store a reference to
+        Args:
+            obj: The object to store a reference to
         """
         self.obj: Any = obj
 
 
 class _ModuleEnv:
-    """
-    An abstract module enviornment class
+    """An abstract module enviornment class
     This class provides a context manager for the env it represents
     Subclasses are ModuleEnv and InverseModuleEnv
     Changing sys attributes are global, not thread unique
@@ -78,8 +75,9 @@ class _ModuleEnv:
         _parent: Self | None = None,
     ):
         """
-        :param sys_attrs: sys attributes, aside from sys.modules, this env should manage
-        :param _parent: Only for internal use; do not set this
+        Args:
+            sys_attrs: sys attributes, aside from sys.modules, this env should manage
+            _parent: Only for internal use; do not set this
         """
         if isinstance(self, InverseModuleEnv) and _parent is None:
             raise UsageError("Users should not construct an InverseModuleEnv directly")
@@ -87,21 +85,25 @@ class _ModuleEnv:
         self._sys: _Ref = _Ref(_Sys(sys_attrs)) if self._parent is None else self._parent._sys
 
     def inverse(self) -> ModuleEnv | InverseModuleEnv:
-        """
-        For ModuleEnv's this returns an InverseModuleEnv
+        """For ModuleEnv's this returns an InverseModuleEnv
         whose context manager can escape the current ModuleEnv
         For an InverseModuleEnv this returns an ModuleEnv which can re-enter the escaped context
-        :return: An _ModuleEnv that undoes what the context manager of this _ModuleEnv does
+
+        Returns:
+            An _ModuleEnv that undoes what the context manager of this _ModuleEnv does
         """
         return (InverseModuleEnv if isinstance(self, ModuleEnv) else ModuleEnv)(_parent=self)  # type: ignore
 
     def __getitem__(self, module: str) -> ModuleType:
-        """
-        Get the give module for this environment
+        """Get the give module for this environment
         May only be used with the current ModuleEnv is active (this is enforced)
         This should be the same as __import__(module) but is more explicit
-        :param module: The name of the module
-        :return: The module of the given name for this _ModuleEnv
+
+        Args:
+            module: The name of the module
+
+        Returns:
+            The module of the given name for this _ModuleEnv
         """
         if self is not self._active[-1]:
             raise UsageError("Do not access this when this ModuleEnv is not active")
@@ -111,9 +113,10 @@ class _ModuleEnv:
         return ret
 
     def __enter__(self) -> Self:
-        """
-        Set up the new environment on enter
-        :return: self
+        """Set up the new environment on enter
+
+        Returns:
+            self
         """
         if isinstance(self, InverseModuleEnv) and self._active[-1] is not self._parent:
             raise UsageError("InverseModuleEnv must be used within an ModuleEnv's context")
@@ -126,17 +129,14 @@ class _ModuleEnv:
         return self
 
     def __exit__(self, *_) -> None:
-        """
-        Restore the previous environment on exit
-        """
+        """Restore the previous environment on exit"""
         assert self is self._active[-1], "Sanity Check: _ModuleEnv is not active"
         self._sys.obj = self._sys.obj.install()
         self._active.pop()
 
 
 class ModuleEnv(_ModuleEnv):
-    """
-    A python module environment
+    """A python module environment
     This class provides a context manager for the env it represents
     Changing sys attributes are global, not thread unique
     Do not use _ModuleEnvs concurrently in multiple threads
@@ -144,8 +144,7 @@ class ModuleEnv(_ModuleEnv):
 
 
 class InverseModuleEnv(_ModuleEnv):
-    """
-    An environment, which when active, restores the environment the parent ModuleEnv replaced
+    """An environment, which when active, restores the environment the parent ModuleEnv replaced
     This class provides a context manager for the env it represents
     Changing sys attributes are global, not thread unique
     Do not use _ModuleEnvs concurrently in multiple threads
